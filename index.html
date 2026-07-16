@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rouen Transit // Live Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 2s infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <div class="h-1.5 w-full flex">
+    <div class="bg-emerald-500 flex-1" title="Métro"></div>
+    <div class="bg-red-500 flex-1" title="TEOR T1/T2/T3"></div>
+    <div class="bg-amber-500 flex-1" title="TEOR T4/T5"></div>
+    <div class="bg-violet-600 flex-1" title="Trains Nomad"></div>
+    <div class="bg-sky-400 flex-1" title="Lovélo"></div>
+  </div>
+
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2.5 rounded-xl shadow-lg shadow-indigo-900/30">
+          <i class="fa-solid fa-train-subway text-xl text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
+            ROUEN TRANSIT
+          </h1>
+          <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Hub Métropole & Regional Nomad</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 text-xs bg-slate-950/60 p-2 rounded-lg border border-slate-800/80">
+        <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-950/30 border border-emerald-500/20 text-emerald-400">
+          <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>MÉTRO: OK</span>
+        </div>
+        <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-amber-950/30 border border-amber-500/20 text-amber-400">
+          <span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+          <span>TEOR: Ralentis T2</span>
+        </div>
+        <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-violet-950/30 border border-violet-500/20 text-violet-400">
+          <span class="h-2 w-2 rounded-full bg-violet-500 animate-pulse"></span>
+          <span>NOMAD: Fluide</span>
+        </div>
+        <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-sky-950/30 border border-sky-500/20 text-sky-400">
+          <span class="h-2 w-2 rounded-full bg-sky-500 animate-pulse"></span>
+          <span>LOVÉLO: 92% dispos</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <div class="lg:col-span-5 flex flex-col gap-6">
+      
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-sm flex flex-col h-full justify-between">
+        <div>
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex items-center gap-2">
+              <span class="bg-violet-600 text-white text-[10px] font-bold px-2 py-0.5 rounded tracking-widest uppercase">Nomad TER</span>
+              <h2 class="text-lg font-bold text-slate-100">Ligne Express Caen ⇄ Rouen</h2>
+            </div>
+            <button id="toggle-train-dir" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-arrows-rotate text-indigo-400"></i>
+              <span>Inverser</span>
+            </button>
+          </div>
+
+          <div class="mb-5 bg-indigo-950/20 border border-indigo-500/10 rounded-xl p-3 flex justify-between items-center text-sm">
+            <div class="text-left">
+              <span class="block text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Origine</span>
+              <span id="train-origin" class="font-bold text-slate-200">Gare de Caen</span>
+            </div>
+            <i class="fa-solid fa-arrow-right-long text-slate-500 animate-pulse-slow mx-2"></i>
+            <div class="text-right">
+              <span class="block text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Destination</span>
+              <span id="train-dest" class="font-bold text-slate-200">Rouen Rive Droite</span>
+            </div>
+          </div>
+
+          <div id="train-board" class="space-y-3">
+            </div>
+        </div>
+
+        <div class="mt-5 pt-4 border-t border-slate-800 flex justify-between items-center">
+          <p class="text-xs text-slate-500">Mise à jour auto toutes les 60s</p>
+          <button id="refresh-trains" class="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-rotate-right"></i> Actualiser de force
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-sm">
+        <div class="flex items-center gap-2 mb-4">
+          <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+          <h2 class="text-lg font-bold text-slate-100">Actu Réseau & Alertes</h2>
+        </div>
+        <div class="space-y-3.5">
+          <div class="flex gap-3 bg-slate-950/40 p-3 rounded-xl border border-slate-800/80">
+            <div class="text-amber-500 shrink-0 mt-0.5"><i class="fa-solid fa-triangle-exclamation text-sm"></i></div>
+            <div class="text-xs">
+              <span class="font-bold text-slate-300 block mb-0.5">SNCF Nomad : Gibier sur les voies</span>
+              <p class="text-slate-400">Présence signalée d'animaux sauvages entre Caen et Lison. Retards résiduels de 10 à 15 minutes à prévoir sur l'axe Rive Droite.</p>
+              <span class="text-[10px] text-slate-500 mt-1.5 block">Il y a 14 min</span>
+            </div>
+          </div>
+          <div class="flex gap-3 bg-slate-950/40 p-3 rounded-xl border border-slate-800/80">
+            <div class="text-emerald-400 shrink-0 mt-0.5"><i class="fa-solid fa-circle-check text-sm"></i></div>
+            <div class="text-xs">
+              <span class="font-bold text-slate-300 block mb-0.5">Nouveau : Ligne TEOR T5 active</span>
+              <p class="text-slate-400">La toute nouvelle ligne T5 relie désormais Mont-Saint-Aignan à la Rive Gauche sans coupure. Profites-en pour tes trajets campus !</p>
+              <span class="text-[10px] text-slate-500 mt-1.5 block">Info Métropole</span>
+            </div>
+          </div>
+          <div class="flex gap-3 bg-slate-950/40 p-3 rounded-xl border border-slate-800/80">
+            <div class="text-indigo-400 shrink-0 mt-0.5"><i class="fa-solid fa-sparkles text-sm"></i></div>
+            <div class="text-xs">
+              <span class="font-bold text-slate-300 block mb-0.5">Rappel : Samedis Gratuits !</span>
+              <p class="text-slate-400">Sur tout le réseau Astuce (Métro, TEOR, Bus, Navette fluviale), le voyage est totalement gratuit tous les samedis. N'oublie pas de valider ton titre gratuit ou pass.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-7 flex flex-col gap-6">
+
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-sm">
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-route text-indigo-400"></i>
+            <h2 class="text-lg font-bold text-slate-100">Calculateur d'Itinéraire Intelligent</h2>
+          </div>
+          <span class="bg-indigo-950 text-indigo-400 text-[11px] font-bold px-2 py-0.5 rounded border border-indigo-500/20">Module Intelligent</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div>
+            <label class="block text-[11px] text-slate-400 font-bold uppercase mb-1">Départ</label>
+            <select id="route-start" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+              <option value="gare">🚉 Gare Rive Droite</option>
+              <option value="corneille">🏫 Lycée Corneille</option>
+              <option value="arts" selected>🎭 Théâtre des Arts</option>
+              <option value="campus">🎓 Campus Mont-Saint-Aignan</option>
+              <option value="madrillet">💻 Campus du Madrillet</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 font-bold uppercase mb-1">Arrivée</label>
+            <select id="route-end" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+              <option value="gare">Gare Rive Droite 🚉</option>
+              <option value="corneille">Lycée Corneille 🏫</option>
+              <option value="arts">Théâtre des Arts 🎭</option>
+              <option value="campus" selected>Campus Mont-Saint-Aignan 🎓</option>
+              <option value="madrillet">Campus du Madrillet 💻</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 font-bold uppercase mb-1">Heure du Trajet</label>
+            <select id="route-time" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+              <option value="day_peak">08:15 (Heure de Pointe)</option>
+              <option value="day_off">14:30 (Heure Creuse)</option>
+              <option value="night_early">21:45 (Soirée)</option>
+              <option value="night_late">02:30 (Milieu de Nuit ⚠️)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="route-result" class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 min-h-[140px] flex flex-col justify-between">
+          </div>
+      </div>
+
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-sm flex-1">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-emerald-400"></i>
+            <h2 class="text-lg font-bold text-slate-100">Bornes Temps Réel Local</h2>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button class="station-tab px-3 py-1 text-xs font-semibold rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 active:scale-95 transition" data-station="gare">Gare RD</button>
+            <button class="station-tab px-3 py-1 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-750 active:scale-95 transition" data-station="theatre">Théâtre des Arts</button>
+            <button class="station-tab px-3 py-1 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-750 active:scale-95 transition" data-station="hotel">Hôtel de Ville</button>
+          </div>
+        </div>
+
+        <div class="overflow-hidden border border-slate-800 rounded-xl">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-950/80 border-b border-slate-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <th class="p-3 pl-4">Ligne</th>
+                <th class="p-3">Direction</th>
+                <th class="p-3 text-right pr-4">Prochain Passage</th>
+              </tr>
+            </thead>
+            <tbody id="station-board-rows" class="divide-y divide-slate-800/50 text-sm">
+              </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-900 bg-slate-950 px-4 py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p>© 2026 Rouen Transit Dashboard • Design Futuriste Minimal</p>
+      <div class="flex gap-4">
+        <a href="https://reseau-astuce.fr/" target="_blank" class="hover:underline hover:text-slate-400">Réseau Astuce</a>
+        <a href="https://www.ter.sncf.com/normandie" target="_blank" class="hover:underline hover:text-slate-400">Nomad TER</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // State Management
+    let trainDirection = "caen_rouen"; // caen_rouen or rouen_caen
+    let currentStation = "gare"; // gare, theatre, hotel
+
+    // Dynamic mock departures for Nomad TER
+    const getNomadDepartures = (dir) => {
+      const now = new Date();
+      const baseDepartures = [
+        { id: 1, train: "Nomad 852402", timeOffset: 7, status: "À l'heure", track: "2" },
+        { id: 2, train: "Nomad 852408", timeOffset: 24, status: "À l'heure", track: "1B" },
+        { id: 3, train: "Nomad 852414", timeOffset: 52, status: "Retardé 10 min", track: "4" },
+        { id: 4, train: "Nomad 852420", timeOffset: 85, status: "À l'heure", track: "3" }
+      ];
+
+      return baseDepartures.map(t => {
+        const depTime = new Date(now.getTime() + t.timeOffset * 60000);
+        const hours = depTime.getHours().toString().padStart(2, '0');
+        const minutes = depTime.getMinutes().toString().padStart(2, '0');
+        return {
+          ...t,
+          timeStr: `${hours}:${minutes}`,
+          minutesRemaining: t.timeOffset
+        };
+      });
+    };
+
+    // Render Nomad Departures Board
+    function renderTrainBoard() {
+      const board = document.getElementById("train-board");
+      const list = getNomadDepartures(trainDirection);
+      board.innerHTML = "";
+
+      list.forEach(train => {
+        const statusColor = train.status.includes("Retardé") ? "text-amber-400 bg-amber-950/30 border-amber-500/20" : "text-emerald-400 bg-emerald-950/30 border-emerald-500/20";
+        board.innerHTML += `
+          <div class="flex items-center justify-between bg-slate-950/50 border border-slate-800 hover:border-slate-700 transition p-3 rounded-xl">
+            <div class="flex items-center gap-3">
+              <div class="font-mono text-base font-bold text-slate-300 bg-slate-900 px-2 py-1.5 rounded border border-slate-800">
+                ${train.timeStr}
+              </div>
+              <div>
+                <span class="block text-xs font-mono font-bold text-slate-400">${train.train}</span>
+                <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded font-semibold border ${statusColor}">
+                  <span class="h-1 w-1 rounded-full ${train.status.includes("Retardé") ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
+                  ${train.status}
+                </span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="block text-[10px] text-slate-500 font-bold uppercase">Voie</span>
+              <span class="font-mono text-sm font-bold text-indigo-400">${train.track}</span>
+              <span class="block text-[11px] text-slate-400 mt-0.5 font-medium">${train.minutesRemaining} min</span>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Toggle train direction
+    document.getElementById("toggle-train-dir").addEventListener("click", () => {
+      trainDirection = trainDirection === "caen_rouen" ? "rouen_caen" : "caen_rouen";
+      
+      const origin = document.getElementById("train-origin");
+      const dest = document.getElementById("train-dest");
+      
+      if (trainDirection === "caen_rouen") {
+        origin.innerText = "Gare de Caen";
+        dest.innerText = "Rouen Rive Droite";
+      } else {
+        origin.innerText = "Rouen Rive Droite";
+        dest.innerText = "Gare de Caen";
+      }
+      
+      renderTrainBoard();
+    });
+
+    // Refresh trains button
+    document.getElementById("refresh-trains").addEventListener("click", () => {
+      renderTrainBoard();
+    });
+
+    // Local Station Data (Réseau Astuce)
+    const stationData = {
+      gare: [
+        { type: "metro", line: "M", direction: "Technopôle / Georges Braque", time: 3, badge: "bg-cyan-600 text-white" },
+        { type: "teor", line: "T4", direction: "Marie Curie (Sotteville-lès-Rouen)", time: 5, badge: "bg-amber-600 text-white" },
+        { type: "bus", line: "F2", direction: "La Vatine (Mont-Saint-Aignan)", time: 8, badge: "bg-rose-600 text-white" },
+        { type: "bus", line: "F7", direction: "Hôtel de Ville (Sotteville)", time: 11, badge: "bg-emerald-600 text-white" }
+      ],
+      theatre: [
+        { type: "teor", line: "T1", direction: "Boulingrin (Rouen)", time: 2, badge: "bg-red-600 text-white" },
+        { type: "teor", line: "T2", direction: "Tamarelle (Bihorel)", time: 4, badge: "bg-red-600 text-white" },
+        { type: "teor", line: "T3", direction: "Durécu-Lavallée (Darnétal)", time: 7, badge: "bg-red-600 text-white" },
+        { type: "metro", line: "M", direction: "Boulingrin (Rouen)", time: 9, badge: "bg-cyan-600 text-white" }
+      ],
+      hotel: [
+        { type: "bus", line: "F1", direction: "Stade Diochon (Petit-Quevilly)", time: 1, badge: "bg-emerald-600 text-white" },
+        { type: "bus", line: "F7", direction: "La Pléiade (Mont-Saint-Aignan)", time: 6, badge: "bg-emerald-600 text-white" },
+        { type: "bus", line: "11", direction: "Île Lacroix (Rouen)", time: 14, badge: "bg-slate-700 text-slate-100" }
+      ]
+    };
+
+    function renderStationBoard() {
+      const rows = document.getElementById("station-board-rows");
+      const list = stationData[currentStation];
+      rows.innerHTML = "";
+
+      list.forEach(row => {
+        const timeDisplay = row.time <= 1 ? "Approche" : `${row.time} min`;
+        const timeClass = row.time <= 1 ? "text-emerald-400 font-extrabold animate-pulse" : "text-slate-300 font-mono font-semibold";
+        rows.innerHTML += `
+          <tr class="hover:bg-slate-900/30 transition">
+            <td class="p-3 pl-4">
+              <span class="font-mono text-xs font-bold px-2.5 py-1 rounded ${row.badge}">${row.line}</span>
+            </td>
+            <td class="p-3 font-medium text-slate-300">${row.direction}</td>
+            <td class="p-3 text-right pr-4 ${timeClass}">${timeDisplay}</td>
+          </tr>
+        `;
+      });
+    }
+
+    // Set up Station tabs
+    document.querySelectorAll(".station-tab").forEach(tab => {
+      tab.addEventListener("click", (e) => {
+        // Reset old active tab
+        document.querySelectorAll(".station-tab").forEach(t => {
+          t.classList.remove("bg-indigo-600/20", "text-indigo-400", "border-indigo-500/20");
+          t.classList.add("bg-slate-800", "text-slate-400");
+        });
+        // Set new active tab
+        e.target.classList.remove("bg-slate-800", "text-slate-400");
+        e.target.classList.add("bg-indigo-600/20", "text-indigo-400", "border-indigo-500/20");
+
+        currentStation = e.target.dataset.station;
+        renderStationBoard();
+      });
+    });
+
+    // ITINERARY DYNAMIC ENGINE
+    function calculateItinerary() {
+      const start = document.getElementById("route-start").value;
+      const end = document.getElementById("route-end").value;
+      const time = document.getElementById("route-time").value;
+      const box = document.getElementById("route-result");
+
+      if (start === end) {
+        box.innerHTML = `
+          <div class="flex flex-col items-center justify-center text-center p-6 text-slate-500">
+            <i class="fa-solid fa-circle-question text-xl mb-2 text-indigo-400/50"></i>
+            <span class="text-xs">Vous êtes déjà arrivé à destination ! Changez le point de départ ou d'arrivée.</span>
+          </div>
+        `;
+        return;
+      }
+
+      // Generate Route Logic based on Day/Night Time Selectors
+      let routeHtml = "";
+      
+      if (time === "night_late") {
+        // LATE NIGHT: Transit closes. User must walk, bike, or take the Noctambus
+        routeHtml = `
+          <div class="flex flex-col gap-3">
+            <div class="flex justify-between items-center border-b border-slate-900 pb-2">
+              <span class="text-xs font-bold text-amber-400 flex items-center gap-1">
+                <i class="fa-solid fa-moon"></i> Mode Nuit Activé (02h30)
+              </span>
+              <span class="text-xs text-slate-400">Total : ~18-25 min</span>
+            </div>
+            
+            <div class="flex items-center gap-2 flex-wrap text-xs">
+              <span class="bg-indigo-950/60 border border-indigo-500/20 px-2 py-1 rounded text-indigo-300 font-bold">1. Marche (4 min)</span>
+              <i class="fa-solid fa-chevron-right text-slate-600"></i>
+              <span class="bg-slate-900 border border-slate-800 px-2 py-1 rounded text-slate-300 font-mono font-bold flex items-center gap-1">
+                <i class="fa-solid fa-bus text-amber-500 text-[10px]"></i> Noctambus
+              </span>
+              <i class="fa-solid fa-chevron-right text-slate-600"></i>
+              <span class="bg-emerald-950/30 border border-emerald-500/20 px-2 py-1 rounded text-emerald-400 font-bold">Arrivée</span>
+            </div>
+
+            <div class="mt-2 text-[11px] text-slate-400 flex items-start gap-2 bg-slate-900/40 p-2.5 rounded-lg border border-slate-800/60">
+              <i class="fa-solid fa-bicycle text-sky-400 mt-0.5"></i>
+              <div>
+                <span class="font-bold text-slate-300 block">Alternative Lovélos actifs :</span>
+                Station Théâtre des Arts : <strong class="text-slate-200">6 vélos dispo</strong>. Station de dépôt la plus proche : <strong class="text-slate-200">12 bornes libres</strong>.
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        // STANDARD DAY / EVENING TRAFFIC
+        let primaryMode = "TEOR T1";
+        let modeColor = "bg-red-600 text-white";
+        let duration = "12 min";
+
+        if (start === "gare" && end === "madrillet") {
+          primaryMode = "M (Métro Technopôle)";
+          modeColor = "bg-cyan-600 text-white";
+          duration = "19 min";
+        } else if (start === "campus" || end === "campus") {
+          primaryMode = "Bus F2 ou F7";
+          modeColor = "bg-emerald-600 text-white";
+          duration = "14 min";
+        } else if (start === "arts" && end === "gare") {
+          primaryMode = "Métro (M) ou T4";
+          modeColor = "bg-indigo-600 text-white";
+          duration = "6 min";
+        } else if (start === "corneille") {
+          primaryMode = "Bus F1 / Ligne 20";
+          modeColor = "bg-slate-700 text-slate-100";
+          duration = "10 min";
+        }
+
+        const frequency = time === "day_peak" ? "Haute fréquence (~4 min d'attente)" : "Fréquence standard (~9 min d'attente)";
+
+        routeHtml = `
+          <div class="flex flex-col gap-3">
+            <div class="flex justify-between items-center border-b border-slate-900 pb-2">
+              <span class="text-xs font-bold text-indigo-400 flex items-center gap-1">
+                <i class="fa-solid fa-circle-check"></i> Itinéraire optimal trouvé
+              </span>
+              <span class="text-xs text-slate-200 font-mono font-bold bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Durée : ~${duration}</span>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap text-xs">
+              <span class="bg-slate-900 border border-slate-800 px-2.5 py-1 rounded text-slate-400">Départ</span>
+              <i class="fa-solid fa-chevron-right text-slate-600"></i>
+              <span class="${modeColor} px-2.5 py-1 rounded font-bold font-mono text-[11px]">${primaryMode}</span>
+              <i class="fa-solid fa-chevron-right text-slate-600"></i>
+              <span class="bg-indigo-950 border border-indigo-500/20 px-2.5 py-1 rounded text-indigo-300 font-semibold">Arrivée</span>
+            </div>
+
+            <div class="flex justify-between items-center mt-2 text-[11px]">
+              <span class="text-slate-400 italic">${frequency}</span>
+              <span class="text-indigo-400 font-bold hover:underline cursor-pointer"><i class="fa-solid fa-map-location-dot"></i> Voir plan d'arrêt</span>
+            </div>
+          </div>
+        `;
+      }
+
+      box.innerHTML = routeHtml;
+    }
+
+    // Set up listeners for the route planner
+    document.getElementById("route-start").addEventListener("change", calculateItinerary);
+    document.getElementById("route-end").addEventListener("change", calculateItinerary);
+    document.getElementById("route-time").addEventListener("change", calculateItinerary);
+
+    // Initial Launch
+    renderTrainBoard();
+    renderStationBoard();
+    calculateItinerary();
+
+    // Auto Refresh timers to simulate real-time live boards
+    setInterval(() => {
+      // Small chance to fluctuate countdown times for realism
+      renderStationBoard();
+    }, 20000);
+  </script>
+</body>
+</html>
